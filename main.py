@@ -2,7 +2,8 @@
 from helper.C2 import C2Server
 from helper.session import Session
 import os
-
+import sys
+import subprocess
 
 class main(Session):
     def __init__(self):
@@ -49,6 +50,31 @@ class main(Session):
                 selected = input("Enter option: ").strip()
                 session_data = self.loadSession(selected)
                 self.start(session_data[-1])
+            elif selected == "2":
+                self.getSessions()
+                print("Invalid option")
+                selected = input("Enter option: ").strip()
+                session_data = self.loadSession(selected)
+                self.start(session_data[-1])
+            elif selected == "3":
+                print("Select tunnel provider:")
+                print("1) ngrok")
+                print("2) cloudflared")
+                print("3) localtunnel")
+                tunnel_choice = input("type 1, 2 or 3: ").strip()
+
+                tunnel_map = {
+                    "1": "ngrok",
+                    "2": "cloudflared",
+                    "3": "localtunnel",
+                }
+                tunnel_provider = tunnel_map.get(tunnel_choice)
+                if tunnel_provider is None:
+                    print("Invalid tunnel option. Please type 1, 2, or 3.")
+                    return
+
+                print(f"Starting target server with {tunnel_provider} tunnel...\n")
+                subprocess.run([sys.executable, "target.py", "--tunnel", tunnel_provider], check=False)
             else:
                 self.start(session_data[-1])
         else:

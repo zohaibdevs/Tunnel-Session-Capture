@@ -8,7 +8,8 @@ import socket
 import subprocess
 import threading
 from pathlib import Path
-
+from .helper.systemInfo import SystemInfo
+from .helper.session import Session
 from flask import Flask, after_this_request, jsonify, request
 from pyngrok import ngrok
 
@@ -17,106 +18,6 @@ SESSION_DIR = Path("session")
 ACTIVE_TUNNEL = None
 ACTIVE_TUNNEL_PROVIDER = "ngrok"
 SERVER_PORT = 5000
-
-
-def get_client_ip() -> str:
-    forwarded_for = request.headers.get("X-Forwarded-For", "").strip()
-    if forwarded_for:
-        return forwarded_for.split(",")[0].strip()
-    return (request.remote_addr or "unknown").strip()
-
-
-def get_local_ip() -> str:
-    try:
-        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
-            sock.connect(("8.8.8.8", 80))
-            return sock.getsockname()[0]
-    except Exception:
-        try:
-            return socket.gethostbyname(socket.gethostname())
-        except Exception:
-            return "127.0.0.1"
-
-
-def collect_info() -> dict:
-    client_ip = get_client_ip()
-    local_ip = get_local_ip()
-    return {
-        "ip": client_ip,
-        "local_ip": local_ip,
-        "timestamp": datetime.now().isoformat(timespec="seconds"),
-        "client_ip": client_ip,
-        "client_user_agent": request.headers.get("User-Agent", "unknown"),
-        "client_accept_language": request.headers.get("Accept-Language", "unknown"),
-        "client_host": request.host,
-        "request_method": request.method,
-        "request_path": request.path,
-        "server_hostname": socket.gethostname(),
-        "server_os": platform.system(),
-        "server_os_release": platform.release(),
-        "server_os_version": platform.version(),
-        "server_machine": platform.machine(),
-        "server_processor": platform.processor(),
-        "server_python": platform.python_version(),
-        "server_working_dir": os.getcwd(),
-        "env_username": os.getenv("USERNAME", "unknown"),
-        "env_computername": os.getenv("COMPUTERNAME", "unknown"),
-        "env_userdomain": os.getenv("USERDOMAIN", "unknown"),
-        "env_userprofile": os.getenv("USERPROFILE", "unknown"),
-        "env_path": os.getenv("PATH", "unknown"),
-    }
-
-
-def save_session(info: dict) -> Path:
-    SESSION_DIR.mkdir(parents=True, exist_ok=True)
-    safe_ip = info["ip"].replace(":", "_").replace("/", "_") or "unknown"
-    output_file = SESSION_DIR / f"{safe_ip}.json"
-
-    sessions: list[dict] = []
-    if output_file.exists():
-        try:
-            with output_file.open("r", encoding="utf-8") as file:
-                existing_data = json.load(file)
-                if isinstance(existing_data, list):
-                    sessions = existing_data
-                elif isinstance(existing_data, dict):
-                    sessions = [existing_data]
-        except Exception:
-            sessions = []
-
-    sessions.append(info)
-
-    with output_file.open("w", encoding="utf-8") as file:
-        json.dump(sessions, file, indent=2)
-
-    return output_file
-
-
-def build_session_lines(info: dict, output_file: Path) -> list[str]:
-    return [
-        f"timestamp: {info['timestamp']}",
-        f"client_ip: {info['client_ip']}",
-        f"local_ip: {info.get('local_ip', 'unknown')}",
-        f"client_user_agent: {info['client_user_agent']}",
-        f"client_accept_language: {info['client_accept_language']}",
-        f"client_host: {info['client_host']}",
-        f"request_method: {info['request_method']}",
-        f"request_path: {info['request_path']}",
-        f"server_hostname: {info['server_hostname']}",
-        f"server_os: {info['server_os']}",
-        f"server_os_release: {info['server_os_release']}",
-        f"server_os_version: {info['server_os_version']}",
-        f"server_machine: {info['server_machine']}",
-        f"server_processor: {info['server_processor']}",
-        f"server_python: {info['server_python']}",
-        f"server_working_dir: {info['server_working_dir']}",
-        f"env_username: {info['env_username']}",
-        f"env_computername: {info['env_computername']}",
-        f"env_userdomain: {info['env_userdomain']}",
-        f"env_userprofile: {info['env_userprofile']}",
-        f"env_path: {info['env_path']}",
-        f"saved_to: {output_file.resolve()}",
-    ]
 
 
 def start_ngrok_tunnel(port: int):
@@ -218,8 +119,8 @@ def parse_args() -> argparse.Namespace:
 
 @app.route("/")
 def home():
-    target = collect_info()
-    output_file = save_session(target)
+    target = SystemInfo().get_info()
+    output_file = Session().save_session(target)
     payload = {
         "target": target,
         "saved_to": str(output_file.resolve()),
