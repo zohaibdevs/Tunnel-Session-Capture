@@ -1,17 +1,18 @@
-
 from helper.C2 import C2Server
 from helper.session import Session
 import os
 import sys
 import subprocess
+import time
 
 class main(Session):
     def __init__(self):
         super().__init__()
         self.print_banner()
-        self.options()
-        selected = input("Enter option: ").strip()
-        self.run(selected)
+        while True:
+            self.options()
+            selected = input("Enter option: ").strip()
+            self.run(selected)
 
     def print_banner(self) -> None:
         print(
@@ -37,52 +38,57 @@ class main(Session):
         for key, value in options.items():
             print(f"{key}: {value}")
 
-    def run(self, selected):
+    def run(self, selected: str) -> None:
         if selected == "0":
             self.exit()
+            return
+
         if selected == "1":
-            self.getSessions()
-            selected = input("Enter option: ").strip()
-            session_data = self.loadSession(selected)
-            if session_data is None:
-                self.getSessions()
-                print("Invalid option")
-                selected = input("Enter option: ").strip()
-                session_data = self.loadSession(selected)
-                self.start(session_data[-1])
-            elif selected == "2":
-                self.getSessions()
-                print("Invalid option")
-                selected = input("Enter option: ").strip()
-                session_data = self.loadSession(selected)
-                self.start(session_data[-1])
-            elif selected == "3":
-                print("Select tunnel provider:")
-                print("1) ngrok")
-                print("2) cloudflared")
-                print("3) localtunnel")
-                tunnel_choice = input("type 1, 2 or 3: ").strip()
+            sessions = self.getSessions()
+            if not sessions:
+                print("No sessions found yet.")
+                return
 
-                tunnel_map = {
-                    "1": "ngrok",
-                    "2": "cloudflared",
-                    "3": "localtunnel",
-                }
-                tunnel_provider = tunnel_map.get(tunnel_choice)
-                if tunnel_provider is None:
-                    print("Invalid tunnel option. Please type 1, 2, or 3.")
-                    return
+            session_choice = input("Pick session number: ").strip()
+            session_data = self.loadSession(session_choice)
+            if not session_data:
+                print("Invalid session selection.")
+                return
 
-                print(f"Starting target server with {tunnel_provider} tunnel...\n")
-                subprocess.run([sys.executable, "target.py", "--tunnel", tunnel_provider], check=False)
-            else:
-                self.start(session_data[-1])
-        else:
-            self.options()
-            print("Invalid option")
-            selected = input("Enter option: ").strip()
-            self.run(selected)
+            # session files are stored as a list of entries; use the latest entry
+            self.start(session_data[-1])
+            return
 
+        if selected == "2":
+            # refresh list
+            self.sessions = {}
+            sessions = self.getSessions()
+            if not sessions:
+                print("No sessions found yet.")
+            return
+
+        if selected == "3":
+            print("Select tunnel provider:")
+            print("1) ngrok")
+            print("2) cloudflared")
+            print("3) localtunnel")
+            tunnel_choice = input("type 1, 2 or 3: ").strip()
+
+            tunnel_map = {
+                "1": "ngrok",
+                "2": "cloudflared",
+                "3": "localtunnel",
+            }
+            tunnel_provider = tunnel_map.get(tunnel_choice)
+            if not tunnel_provider:
+                print("Invalid tunnel option. Please type 1, 2, or 3.")
+                return
+
+            print(f"Starting capture server with {tunnel_provider} tunnel...\n")
+            subprocess.run([sys.executable, "app.py", "--tunnel", tunnel_provider], check=False)
+            return
+
+        print("Invalid option. Please select 0, 1, 2 or 3.")
 
     def get_ip(self, session_data):
         ip_options = {
@@ -96,15 +102,17 @@ class main(Session):
             print(f"{key}: {value}")
         selected_ipo = input("Enter ip option: ").strip()
 
-        if selected_ipo == "2":
+        if selected_ipo == "0":
+            self.exit()
+        elif selected_ipo == "2":
             ip = session_data['ip']
         elif selected_ipo == "1":
             ip = session_data['local_ip']
         elif selected_ipo == "3":
             ip = "0.0.0.0"
         else:
-            self.get_ip(session_data)
-       
+            return self.get_ip(session_data)
+
         return ip
 
     def get_port(self):
@@ -119,6 +127,8 @@ class main(Session):
             print(f"{key}: {value}")
         selected_port = input("Enter port option: ").strip()
 
+        if selected_port == "0":
+            self.exit()
         if selected_port == "2":
             port = input("Enter port: ").strip()
         else:
@@ -130,6 +140,7 @@ class main(Session):
             try:
                 ip = self.get_ip(session_data)
                 port = self.get_port()
+
                 
                 options = {
                     "0": "Exit",

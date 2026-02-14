@@ -1,57 +1,110 @@
-# Tunnel Session Capture Toolkit
+# Tunnel Session Capture
 
-A small Python toolkit for **capturing incoming HTTP request + basic host/environment metadata** via a local Flask endpoint exposed through a tunnel (ngrok/cloudflared/localtunnel). Captured sessions are saved as JSON files under [./session/](cci:9://file:///d:/dsa/custome_tool/session:0:0-0:0).  
-Includes a simple **defensive malware scanner** for local folders/drives.
+Python toolkit to **capture incoming HTTP request details + basic system/environment metadata** through a Flask endpoint exposed via a tunnel (ngrok / cloudflared / localtunnel).
 
-> ⚠️ **Ethics / Safety**
-> Use only on systems and traffic you **own** or have **explicit permission** to test. Session logs may contain IP addresses, user-agent strings, and environment details (potentially sensitive).
+Captured sessions are saved as JSON under `./session/`.
 
----
+> ⚠️ Ethics / Safety
+> Use only on traffic/systems you own or where you have explicit permission. Session logs may contain sensitive metadata.
 
-## Use cases
+## How it works (diagram)
 
-- Debug “who is hitting my endpoint” (IP, headers, path, etc.)
-- Capture basic environment metadata during testing (hostname/OS/python version)
-- Keep a simple per-client session history in JSON
-- Scan local files for suspicious indicators (extensions + string patterns + optional IOC hash list)
-
----
+```mermaid
+flowchart LR
+  A[Run app.py locally] --> B{Start tunnel\nngrok/cloudflared/localtunnel}
+  B --> C[Public URL]
+  D[Remote browser / curl] --> C
+  C --> E[Flask route /]
+  E --> F[Collect request + system info]
+  F --> G[Append to session/<ip>.json]
+  G --> H[JSON response includes saved_to]
+```
 
 ## Project structure
 
-- [target.py](cci:7://file:///d:/dsa/custome_tool/target.py:0:0-0:0) — Flask app that collects request + system info and stores it in `session/<client_ip>.json`
-- [session/](cci:9://file:///d:/dsa/custome_tool/session:0:0-0:0) — stored JSON sessions (each file is a list of captured entries)
-- [create_connection.py](cci:7://file:///d:/dsa/custome_tool/create_connection.py:0:0-0:0) — browse stored sessions and (optionally) send one JSON payload to a local listener
-- [malware_scanner.py](cci:7://file:///d:/dsa/custome_tool/malware_scanner.py:0:0-0:0) — defensive scanner that produces a CSV report
-- [helper/session.py](cci:7://file:///d:/dsa/custome_tool/helper/session.py:0:0-0:0), [helper/systemInfo.py](cci:7://file:///d:/dsa/custome_tool/helper/systemInfo.py:0:0-0:0) — session & data collection helpers
-- [main.py](cci:7://file:///d:/dsa/custome_tool/main.py:0:0-0:0) — interactive menu (work in progress / your entrypoint)
-
----
+- `app.py` - Flask capture server + tunnel bootstrap
+- `main.py` - interactive menu (list sessions / start capture)
+- `helper/systemInfo.py` - request + environment metadata collection
+- `helper/session.py` - session persistence helpers (writes to `session/*.json`)
+- `session/` - stored session JSON files (gitignored)
 
 ## Requirements
 
 - Python 3.10+
-- Pip / venv recommended
+- Recommended: virtualenv
 
-Python packages used (install as needed):
+Python packages:
 - `flask`
-- `pyngrok` (only if you use ngrok via Python)
-- `requests` (used by helper code)
+- `pyngrok` (if you use ngrok)
+- `requests`
 
-Tunnel provider prerequisites (depending on what you use):
-- **ngrok**: account + auth token may be required (set via ngrok config)
+Tunnel provider prerequisites:
+- **ngrok**: account/auth token may be required
 - **cloudflared**: install `cloudflared` and ensure it is in `PATH`
 - **localtunnel**: `npm i -g localtunnel` (command `lt` must be in `PATH`)
-
----
 
 ## Setup
 
 ```bash
 python -m venv .venv
-# Windows PowerShell:
+
+# PowerShell
 . .\.venv\Scripts\Activate.ps1
-# Git Bash:
+
+# Git Bash
 source .venv/Scripts/activate
 
 pip install flask pyngrok requests
+```
+
+## Usage
+
+### 1) Start the capture server (app.py)
+
+```bash
+python app.py --tunnel ngrok
+# or: cloudflared / localtunnel
+python app.py --tunnel cloudflared
+python app.py --tunnel localtunnel
+```
+
+It prints a **Public URL**. Open it in a browser.
+
+When someone hits `/`, a session entry is appended to `session/<client_ip>.json` and the server exits after capturing the request.
+
+### 2) View/list captured sessions (main.py)
+
+```bash
+python main.py
+```
+
+Select:
+- `1` to list available session JSON files and pick one.
+- `3` to start the capture server (calls `app.py`).
+
+## Example session JSON
+
+Each `session/<ip>.json` file is a list. Example (trimmed):
+
+```json
+[
+  {
+    "ip": "203.0.113.10",
+    "local_ip": "192.168.1.7",
+    "timestamp": "2026-02-15T00:03:11",
+    "client_user_agent": "Mozilla/5.0 ...",
+    "request_method": "GET",
+    "request_path": "/",
+    "server_hostname": "DESKTOP-PML7EU0",
+    "server_os": "Windows"
+  }
+]
+```
+
+## Git hygiene
+
+This repo includes a `.gitignore` so your local sessions and venv are not committed.
+
+## License
+
+Add a license before sharing publicly (MIT is a common default).
