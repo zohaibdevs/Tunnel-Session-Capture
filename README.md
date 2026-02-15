@@ -23,7 +23,8 @@ It allows you to:
 
 # 🧠 How to Install
 Run Command into you Terminal to Install
-    git clone https://github.com/zohaibdevs/Tunnel-Session-Capture.git
+	    
+	git clone https://github.com/zohaibdevs/Tunnel-Session-Capture.git
     cd Tunnel-Session-Capture
     chmod +x install.sh
     
