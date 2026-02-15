@@ -101,7 +101,7 @@ class Client():
             self.client.connect((self.host, self.port))
             helper = Helper(self.client)
             helper.send(f"ALIVE:{socket.gethostname()}")
-            callback(helper, self.client)
+            self.start(callback)
             print("[CONNECTED] Client connected to server")
         except Exception as e:
             print(f"[ERROR] Connection failed: {e}")
@@ -119,7 +119,7 @@ class Client():
                 if not cmd or cmd == "exit":
                     helper.send("exit")
                     break
-
+                
                 callback(cmd, helper)
             except Exception as e:
                 print(f"Error: {e}")
