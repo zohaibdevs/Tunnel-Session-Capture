@@ -1,3 +1,4 @@
+
 # 🚀 Tunnel Session Capture
 
 Tunnel Session Capture is a Python-based session logging and
@@ -12,98 +13,81 @@ It allows you to:
 
 ------------------------------------------------------------------------
 
-## 📁 Project Structure
-
-│ ├── main.py \# CLI entry point ├── app.py \# Flask session capture
-server │ ├── helper/ │ ├── C2.py \# Communication wrapper │ ├──
-socket.py \# TCP Server & Client implementation │ ├── session.py \#
-Session management │ └── systemInfo.py \# System information collection
-│ ├── session/ \# Stored session JSON files └── README.md
-
-------------------------------------------------------------------------
-
 # ⚙️ Requirements
 
 -   Python 3.9+
 -   pip
 
-Install dependencies:
-
-    pip install flask pyngrok requests
-
-Optional tunnel providers:
-
-Cloudflared: Install from Cloudflare official website.
-
-LocalTunnel: npm install -g localtunnel
 
 ------------------------------------------------------------------------
 
-# 🧠 How It Works
-
-1️⃣ Start a capture server using a tunnel provider. 2️⃣ When someone
-visits the generated public URL: - Session data is collected. - Data is
-saved in the /session directory. - Tunnel closes automatically.
-
-3️⃣ Use main.py to manage sessions and start communication mode.
-
+# 🧠 How to Install
+    chmod +x install.sh
+    
 ------------------------------------------------------------------------
 
 # 🔥 Usage Guide
+first of all if we need to use server & client before that we need to create session with target machine I will mention below how thing work.
+ 
+- How To Create Session
+- How to start server
+- How to start client
 
-## Step 1 -- Start Main Menu
+## Menu
 
-    python main.py
+    root@terminal> python main.py
+    0: exit
+    1: List target sessions
+    2. Refresh session list
+    3. create new target session
 
-Menu:
 
-0: Exit\
-1: List target sessions\
-2: Refresh sessions list\
-3: Create new target session
+## How To Create Session
+First we need to create session wit target machine
 
-------------------------------------------------------------------------
+### Step 1 --  Select Tunnel Provider (Select 3 from menu)
 
-## Step 2 -- Create New Target Session
+    Select tunnel provider:
+    1: ngrok
+    2: cloudflared
+    3. localtunnel
+### Step 2 -- Public URL
+send public URL to target machine for capturing the info into session. when target machine open the URL into browser after getting there session info server automatically close 
 
-Choose option:
+find this to in terminal 
 
-    3
+    public: url
+    your url is: url
 
-Select tunnel provider:
+## How To Start Server
+Start Listening server on our just send message to client and get response back
 
-1)  ngrok\
-2)  cloudflared\
-3)  localtunnel
+###  Step 1 -- Select 1 to Get List of Session
+I am displaying local IP due to security purpose  don't worry session list show the public IP instead of local IP
 
-A public URL will be generated.
+    [1] 192.168.0.0
+    [2] 192.168.0.7
+    [3] 192.168.0.8
+    etc....
+    pick session number: you can add by number example 1
+    
 
-When visited → session file saved in:
+### Step 2 -- After Selecting Session from list  
 
-    /session/<ip>.json
+    Select Ip Option:
+    0: exit
+    1: Localhost (192.168.0.7)
+    2: Public IP (**.***.***.165)
+    3: Use IP 0.0.0.0
+    Enter Ip Option: 1
+    
+### Step 3 -- Select Port Right after Ip Selection
+Select The Port of target machine
 
-------------------------------------------------------------------------
-
-## Step 3 -- Start Communication
-
-After selecting a session:
-
-Choose IP: 1) Localhost\
-2) Public IP\
-3) 0.0.0.0
-
-Choose port: 1) Default (7706)\
-2) Custom
-
-Choose mode: 1) Listen (Server mode)\
-2) Send (Client mode)
-
-------------------------------------------------------------------------
-
-# 📌 Default Ports
-
-Flask Capture: 5000\
-Communication: 7706
+    0: Exit
+    1: Use Default Port (7706)
+    2: Use Custom Port (If you want any port number)
+    
 
 ------------------------------------------------------------------------
 
