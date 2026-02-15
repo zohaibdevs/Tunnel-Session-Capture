@@ -12,10 +12,12 @@ class C2Server():
         self.port = int(port)
 
     def start_server(self):
+        print("[STARTING] server is starting...")
         self.server = Server(self.host, self.port)
         self.server.start()
 
     def start_client(self):
+        print("[STARTING] client is starting...")
         self.client = Client(self.host, self.port)
         self.client.start()
    

@@ -11,7 +11,7 @@ class Session(SystemInfo):
 
     def getSessions(self):
         if not self.session_dir.is_dir():
-            return None
+            return {}
         
         sessions = [f for f in self.session_dir.glob("*.json") if f.is_file()]
 

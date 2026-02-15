@@ -1,110 +1,128 @@
-# Tunnel Session Capture
+# 🚀 Tunnel Session Capture
 
-Python toolkit to **capture incoming HTTP request details + basic system/environment metadata** through a Flask endpoint exposed via a tunnel (ngrok / cloudflared / localtunnel).
+Tunnel Session Capture is a Python-based session logging and
+communication framework.
 
-Captured sessions are saved as JSON under `./session/`.
+It allows you to:
 
-> ⚠️ Ethics / Safety
-> Use only on traffic/systems you own or where you have explicit permission. Session logs may contain sensitive metadata.
+-   Capture client session metadata using a temporary public tunnel
+-   Store session data locally in JSON format
+-   Establish TCP-based communication (Server / Client mode)
+-   Manage sessions interactively via CLI
 
-## How it works (diagram)
+------------------------------------------------------------------------
 
-```mermaid
-flowchart LR
-  A[Run app.py locally] --> B{Start tunnel\nngrok/cloudflared/localtunnel}
-  B --> C[Public URL]
-  D[Remote browser / curl] --> C
-  C --> E[Flask route /]
-  E --> F[Collect request + system info]
-  F --> G[Append to session/<ip>.json]
-  G --> H[JSON response includes saved_to]
-```
+## 📁 Project Structure
 
-## Project structure
+│ ├── main.py \# CLI entry point ├── app.py \# Flask session capture
+server │ ├── helper/ │ ├── C2.py \# Communication wrapper │ ├──
+socket.py \# TCP Server & Client implementation │ ├── session.py \#
+Session management │ └── systemInfo.py \# System information collection
+│ ├── session/ \# Stored session JSON files └── README.md
 
-- `app.py` - Flask capture server + tunnel bootstrap
-- `main.py` - interactive menu (list sessions / start capture)
-- `helper/systemInfo.py` - request + environment metadata collection
-- `helper/session.py` - session persistence helpers (writes to `session/*.json`)
-- `session/` - stored session JSON files (gitignored)
+------------------------------------------------------------------------
 
-## Requirements
+# ⚙️ Requirements
 
-- Python 3.10+
-- Recommended: virtualenv
+-   Python 3.9+
+-   pip
 
-Python packages:
-- `flask`
-- `pyngrok` (if you use ngrok)
-- `requests`
+Install dependencies:
 
-Tunnel provider prerequisites:
-- **ngrok**: account/auth token may be required
-- **cloudflared**: install `cloudflared` and ensure it is in `PATH`
-- **localtunnel**: `npm i -g localtunnel` (command `lt` must be in `PATH`)
+    pip install flask pyngrok requests
 
-## Setup
+Optional tunnel providers:
 
-```bash
-python -m venv .venv
+Cloudflared: Install from Cloudflare official website.
 
-# PowerShell
-. .\.venv\Scripts\Activate.ps1
+LocalTunnel: npm install -g localtunnel
 
-# Git Bash
-source .venv/Scripts/activate
+------------------------------------------------------------------------
 
-pip install flask pyngrok requests
-```
+# 🧠 How It Works
 
-## Usage
+1️⃣ Start a capture server using a tunnel provider. 2️⃣ When someone
+visits the generated public URL: - Session data is collected. - Data is
+saved in the /session directory. - Tunnel closes automatically.
 
-### 1) Start the capture server (app.py)
+3️⃣ Use main.py to manage sessions and start communication mode.
 
-```bash
-python app.py --tunnel ngrok
-# or: cloudflared / localtunnel
-python app.py --tunnel cloudflared
-python app.py --tunnel localtunnel
-```
+------------------------------------------------------------------------
 
-It prints a **Public URL**. Open it in a browser.
+# 🔥 Usage Guide
 
-When someone hits `/`, a session entry is appended to `session/<client_ip>.json` and the server exits after capturing the request.
+## Step 1 -- Start Main Menu
 
-### 2) View/list captured sessions (main.py)
+    python main.py
 
-```bash
-python main.py
-```
+Menu:
 
-Select:
-- `1` to list available session JSON files and pick one.
-- `3` to start the capture server (calls `app.py`).
+0: Exit\
+1: List target sessions\
+2: Refresh sessions list\
+3: Create new target session
 
-## Example session JSON
+------------------------------------------------------------------------
 
-Each `session/<ip>.json` file is a list. Example (trimmed):
+## Step 2 -- Create New Target Session
 
-```json
-[
-  {
-    "ip": "203.0.113.10",
-    "local_ip": "192.168.1.7",
-    "timestamp": "2026-02-15T00:03:11",
-    "client_user_agent": "Mozilla/5.0 ...",
-    "request_method": "GET",
-    "request_path": "/",
-    "server_hostname": "DESKTOP-PML7EU0",
-    "server_os": "Windows"
-  }
-]
-```
+Choose option:
 
-## Git hygiene
+    3
 
-This repo includes a `.gitignore` so your local sessions and venv are not committed.
+Select tunnel provider:
 
-## License
+1)  ngrok\
+2)  cloudflared\
+3)  localtunnel
 
-Add a license before sharing publicly (MIT is a common default).
+A public URL will be generated.
+
+When visited → session file saved in:
+
+    /session/<ip>.json
+
+------------------------------------------------------------------------
+
+## Step 3 -- Start Communication
+
+After selecting a session:
+
+Choose IP: 1) Localhost\
+2) Public IP\
+3) 0.0.0.0
+
+Choose port: 1) Default (7706)\
+2) Custom
+
+Choose mode: 1) Listen (Server mode)\
+2) Send (Client mode)
+
+------------------------------------------------------------------------
+
+# 📌 Default Ports
+
+Flask Capture: 5000\
+Communication: 7706
+
+------------------------------------------------------------------------
+
+# 🛡 Disclaimer
+
+This project is intended for educational and internal communication
+testing purposes only.
+
+The author is not responsible for misuse.
+
+------------------------------------------------------------------------
+
+# 👨‍💻 Author
+
+Zohaib Ud Din\
+GitHub: https://github.com/zohaibdevs/Tunnel-Session-Capture.git
+
+------------------------------------------------------------------------
+
+# 📜 License
+
+MIT License

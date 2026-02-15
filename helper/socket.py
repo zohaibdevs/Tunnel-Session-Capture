@@ -34,15 +34,12 @@ class Helper:
         self.conn.send(message['text'])
 
     def msg_length(self):
-        message_length = self.receive()
+        message_length = self.receive().strip()
         if message_length:
-            return message_length
+            return int(message_length)
         return None
 
     def receive(self, length=64):
-        if isinstance(length, str):
-            length = int(length)
-
         return self.decode(self.conn.recv(length))
    
 
@@ -58,8 +55,6 @@ class Server():
 
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server.bind((self.host, self.port))
-        print("[STARTING] server is starting...")
-        self.start()
 
 
     def start(self):
