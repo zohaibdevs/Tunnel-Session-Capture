@@ -2,9 +2,10 @@ import socket
 import threading
 import subprocess
 import os
-import base64
 import time
 from .Shell import Shell
+import traceback
+from typing import Callable
 
 class Helper:
     def __init__(self, conn):
@@ -13,11 +14,11 @@ class Helper:
         self.conn = conn
 
     def encode(self, message):
-        return base64.b64encode(message)
+        return message.encode(self.formate)
 
 
     def decode(self, message):
-        return base64.b64decode(message).decode(self.formate, errors='ignore')
+        return message.decode(self.formate, errors='ignore')
 
     def message(self, message):
         message = self.encode(message)
@@ -43,28 +44,31 @@ class Helper:
 
 
 class Server():
-    def __init__(self, host="0.0.0.0", port=7706):
+    def __init__(self, callback: Callable[[str, Helper], None], host="0.0.0.0", port=7706):
         self.host = host
         self.port = port
         self.hostname = socket.gethostname()
         self.header = 10240
         self.formate = 'utf-8'
-
+        
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server.bind((self.host, self.port))
 
+        self.start(callback)
 
-    def start(self):
+
+
+    def start(self, callback):
         self.server.listen()
         print(f"[LISTENING] Server is listening on {self.host}:{self.port}")
 
         while True:
             conn, addr = self.server.accept()
-            thread = threading.Thread(target=self.handle, args=(conn, addr))
+            thread = threading.Thread(target=self.handle, args=(conn, addr, callback))
             thread.start()
             print(f"[ACTIVE CONNECTIONS] {threading.active_count() - 1}")
 
-    def handle(self, conn, addr):
+    def handle(self, conn, addr, callback):
         print(f"[NEW CONNECTION] {addr} connected to the server")
 
         connected = True
@@ -75,14 +79,9 @@ class Server():
             if o == "exit":
                 connected = False
                 break
-            elif o == "shell":
-                print(f"[Client] {addr}: {o}")
-                cmd = input(f"[Server][{addr}][shell]?>: ").strip()
-                helper.send(cmd)
-            else:
-                print(f"[Client] {addr}: {o}")
-                cmd = input(f"[Server][{addr}]?>: ").strip()
-                helper.send(cmd)
+            
+            callback(o, helper)
+
         conn.close()
 
 
@@ -90,7 +89,7 @@ class Server():
 
 
 class Client():
-    def __init__(self, host="0.0.0.0", port=7706):
+    def __init__(self, callback: Callable[[str, Helper], None], host="0.0.0.0", port=7706):
         self.host = host
         self.port = port
         self.hostname = socket.gethostname()
@@ -102,32 +101,26 @@ class Client():
             self.client.connect((self.host, self.port))
             helper = Helper(self.client)
             helper.send(f"ALIVE:{socket.gethostname()}")
-
+            callback(helper, self.client)
             print("[CONNECTED] Client connected to server")
         except Exception as e:
             print(f"[ERROR] Connection failed: {e}")
+            traceback.print_exc()
             self.client = None
     
 
-    def start(self):
+    def start(self, callback):
         while True:
             try:
-                # Receive response from server
                 helper = Helper(self.client)
+
                 cmd = helper.receive(self.header)
+               
                 if not cmd or cmd == "exit":
                     helper.send("exit")
                     break
-                elif cmd == "shell":
-                    shell = Shell(cmd)
-                    ouput = shell.run()
-                    helper.send(ouput)
-                    
-                print(f"[server] {self.hostname}: {cmd}")
-                
-                # Send response back
-                helper.send("Command executed")
-                
+
+                callback(cmd, helper)
             except Exception as e:
                 print(f"Error: {e}")
                 break

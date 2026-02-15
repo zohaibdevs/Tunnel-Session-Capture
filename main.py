@@ -1,4 +1,4 @@
-from helper.C2 import C2Server
+from controller.C2 import C2Server
 from helper.session import Session
 import os
 import sys
@@ -165,7 +165,6 @@ class main(Session):
                     print(f"\n[*] Starting SERVER on {ip}:{port}")
                     self.c2 = C2Server(ip, port)
                     self.c2.start_server()
-
                 elif selected == "2":
                     print(f"\n[*] Starting CLIENT to {ip}:{port}")
                     self.c2 = C2Server(ip, port)

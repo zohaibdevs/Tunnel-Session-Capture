@@ -7,8 +7,27 @@ class Shell:
 
     def run(self):
         try:
-            proc = subprocess.Popen(self.cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
-            output = proc.stdout.read() + proc.stderr.read()
-            return output
+            # NO PIPES = No deadlock
+            result = subprocess.run(self.cmd, shell=True, 
+                                  capture_output=True, text=True, timeout=30)
+            return {
+                'stdout': result.stdout,
+                'stderr': result.stderr, 
+                'returncode': result.returncode
+            }
+        except subprocess.TimeoutExpired:
+            return {'error': 'Command timeout'}
         except Exception as e:
-            return str(e)
+            return {'error': str(e)}
+
+
+# term = True
+# while term:
+#     cmd = input("Enter command: ").strip()
+#     if(cmd == "exit"): 
+#         print("Shell Closed")
+#         term = False
+#         break
+   
+#     shell = Shell(cmd)
+#     print(shell.run())
