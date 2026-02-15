@@ -22,6 +22,9 @@ It allows you to:
 ------------------------------------------------------------------------
 
 # 🧠 How to Install
+Run Command into you Terminal to Install
+    git clone https://github.com/zohaibdevs/Tunnel-Session-Capture.git
+    cd Tunnel-Session-Capture
     chmod +x install.sh
     
 ------------------------------------------------------------------------
@@ -87,6 +90,36 @@ Select The Port of target machine
     0: Exit
     1: Use Default Port (7706)
     2: Use Custom Port (If you want any port number)
+    Enter Port Option: 1
+
+### Step 4 -- Start Server/Client
+You can run server / client By Chosing one of theme option 
+
+    0: Exit
+    1: Start Server
+    2: Start Client
+    Enter C2 Option: 1
+
+### On Serve Start
+Now Server is waiting for client 
+
+    [*] Starting SERVER on 192.168.1.7:7706
+    [STARTING] server is starting...
+    [LISTENING] Server is listening on 192.168.1.7:7706
+
+### On Client Start
+
+	[*] Starting CLIENT to 192.168.1.7:7706
+	[STARTING] client is starting...
+	[CONNECTED] Client connected to server
+  
+  ### After Client Started Server Auto Capture the Connection
+
+	[NEW CONNECTION] ('192.168.1.7', port_number) connected to the server
+	[ACTIVE CONNECTIONS] 1
+	[Client] ('192.168.0.0', port_number): ALIVE:DESKTOP-PML7EU0
+	[Server]?>: 
+  
     
 
 ------------------------------------------------------------------------
