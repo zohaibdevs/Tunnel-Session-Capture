@@ -125,13 +125,11 @@ Now Server is waiting for client
 
 ------------------------------------------------------------------------
 
-# 🛡 Disclaimer
+# ⚠️  IMPORTANT LEGAL NOTICE
 
-This project is intended for educational and internal communication
-testing purposes only.
-
-The author is not responsible for misuse.
-
+This tool is provided STRICTLY for EDUCATIONAL PURPOSES, authorized penetration testing WITH WRITTEN PERMISSION, and internal red-team / blue-team exercises.
+Any unauthorized use (including against systems you do not own or have explicit permission to test) is illegal and may violate computer fraud & abuse laws.
+The author(s) bear NO responsibility for any misuse.
 ------------------------------------------------------------------------
 
 # 👨‍💻 Author
