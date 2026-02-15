@@ -4,6 +4,8 @@ import os
 import sys
 import subprocess
 import time
+import traceback
+
 
 class main(Session):
     def __init__(self):
@@ -161,19 +163,13 @@ class main(Session):
 
                 elif selected == "1":
                     print(f"\n[*] Starting SERVER on {ip}:{port}")
-                    self.c2 = C2Server()
-                    self.c2.host = ip
-                    self.c2.port = int(port)
-                    server = self.c2.listen()
-                    self.c2.receiver(server)
+                    self.c2 = C2Server(ip, port)
+                    self.c2.start_server()
 
                 elif selected == "2":
                     print(f"\n[*] Starting CLIENT to {ip}:{port}")
-                    self.c2 = C2Server()
-                    self.c2.target = ip
-                    self.c2.port = int(port)
-                    client_socket = self.c2.send()
-                    self.c2.sender(client_socket)
+                    self.c2 = C2Server(ip, port)
+                    self.c2.start_client()
 
                 else:
                     print("❌ Invalid option! Try again.")
