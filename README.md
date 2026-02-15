@@ -12,6 +12,25 @@ It allows you to:
 -   Manage sessions interactively via CLI
 
 ------------------------------------------------------------------------
+## ⚠️ IMPORTANT LEGAL & ETHICAL NOTICE
+
+**This tool is provided STRICTLY for:**
+
+- Educational purposes (learning networking, sockets, tunneling, etc.)
+- Authorized penetration testing / red teaming **with explicit written permission** from the system owner
+- Internal lab environments and controlled security exercises
+
+**Unauthorized use is illegal** — including (but not limited to):
+
+- Targeting systems you do not own
+- Using without clear, documented consent
+- Any form of real-world deployment without authorization
+
+This may violate laws such as the Computer Fraud and Abuse Act (CFAA) in the US or equivalent legislation in other countries.
+
+**The author(s) accept NO responsibility or liability for misuse.**
+
+------------------------------------------------------------------------
 
 # ⚙️ Requirements
 
@@ -124,21 +143,3 @@ Now Server is waiting for client
     
 
 ------------------------------------------------------------------------
-
-# ⚠️  IMPORTANT LEGAL NOTICE
-
-This tool is provided STRICTLY for EDUCATIONAL PURPOSES, authorized penetration testing WITH WRITTEN PERMISSION, and internal red-team / blue-team exercises.
-Any unauthorized use (including against systems you do not own or have explicit permission to test) is illegal and may violate computer fraud & abuse laws.
-The author(s) bear NO responsibility for any misuse.
-------------------------------------------------------------------------
-
-# 👨‍💻 Author
-
-Zohaib Ud Din\
-GitHub: https://github.com/zohaibdevs/Tunnel-Session-Capture.git
-
-------------------------------------------------------------------------
-
-# 📜 License
-
-MIT License
