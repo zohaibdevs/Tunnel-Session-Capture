@@ -50,6 +50,7 @@ class Server():
         self.hostname = socket.gethostname()
         self.header = 10240
         self.formate = 'utf-8'
+        self.started = True
         
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server.bind((self.host, self.port))
@@ -62,7 +63,7 @@ class Server():
         self.server.listen()
         print(f"[LISTENING] Server is listening on {self.host}:{self.port}")
 
-        while True:
+        while self.started:
             conn, addr = self.server.accept()
             thread = threading.Thread(target=self.handle, args=(conn, addr, callback))
             thread.start()
@@ -78,14 +79,12 @@ class Server():
             o = helper.receive(self.header)
             if o == "exit":
                 connected = False
+                self.started = False
                 break
             
             callback(o, helper)
 
         conn.close()
-
-
-
 
 
 class Client():
@@ -119,7 +118,7 @@ class Client():
                 if not cmd or cmd == "exit":
                     helper.send("exit")
                     break
-                
+
                 callback(cmd, helper)
             except Exception as e:
                 print(f"Error: {e}")
