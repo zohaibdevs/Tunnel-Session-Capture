@@ -11,6 +11,25 @@ It allows you to:
 -   Establish TCP-based communication (Server / Client mode)
 -   Manage sessions interactively via CLI
 
+## ⚠️ IMPORTANT LEGAL & ETHICAL NOTICE
+
+**This tool is provided STRICTLY for:**
+
+- Educational purposes (learning networking, sockets, tunneling, etc.)
+- Authorized penetration testing / red teaming **with explicit written permission** from the system owner
+- Internal lab environments and controlled security exercises
+
+**Unauthorized use is illegal** — including (but not limited to):
+
+- Targeting systems you do not own
+- Using without clear, documented consent
+- Any form of real-world deployment without authorization
+
+This may violate laws such as the Computer Fraud and Abuse Act (CFAA) in the US or equivalent legislation in other countries.
+
+**The author(s) accept NO responsibility or liability for misuse.**
+
+
 ------------------------------------------------------------------------
 
 # ⚙️ Requirements
@@ -108,14 +127,6 @@ The tool uses a command-line interface for all operations:
 -   Type `shell` to enter shell mode
 -   Execute commands like `ls`, `whoami`, etc.
 -   Type exit to leave shell mode
-------------------------------------------------------------------------
-
-# 🛡 Disclaimer
-
-This project is intended for educational and internal communication
-testing purposes only.
-
-The author is not responsible for misuse.
 
 ------------------------------------------------------------------------
 
