@@ -2,3 +2,7 @@
 __pycache__/
 session/
 *.csv
+dist/
+build/
+*.exe
+*.spec

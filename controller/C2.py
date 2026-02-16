@@ -1,3 +1,4 @@
+import socket
 from helper.socket import Server, Client
 from helper.Shell import Shell
 
@@ -48,4 +49,32 @@ class C2Server():
         instance.send(cmd)
 
         
-   
+    def get_network_info(self):
+        """Get complete network info"""
+        info = {}
+        
+        # Local IPs
+        host = socket.gethostname()
+        info['localhost'] = '127.0.0.1'
+        try:
+            local_ip = socket.gethostbyname(host)
+            info['local'] = local_ip
+        except:
+            pass
+            
+        # LAN IP  
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.connect(("8.8.8.8", 80))
+            info['lan'] = s.getsockname()[0]
+            s.close()
+        except:
+            pass
+            
+        # Public IP
+        try:
+            info['public'] = requests.get('https://api.ipify.org', timeout=5).text.strip()
+        except:
+            info['public'] = 'Check manually'
+            
+        return info

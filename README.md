@@ -11,6 +11,16 @@ It allows you to:
 -   Establish TCP-based communication (Server / Client mode)
 -   Manage sessions interactively via CLI
 
+
+ ████████╗███████╗████████╗ ██████╗███████╗███╗   ██╗
+ ╚══██╔══╝██╔══██╗██╔═══██╗     ██║██╔══██╗████╗  ██║
+    ██║   ██████╔╝██║   ██║     ██║███████║██╔██╗ ██║
+    ██║   ██╔══██╗██║   ██║║██  ██║██╔══██║██║╚██╗██║
+    ██║   ██║  ██║╚██████╔ ║██████║██║  ██║██║ ╚████║
+    ╚═╝   ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝
+    Advanced Pentest Session Capture v2.0
+    by Z.hackers Enhanced
+
 ------------------------------------------------------------------------
 ## ⚠️ IMPORTANT LEGAL & ETHICAL NOTICE
 
