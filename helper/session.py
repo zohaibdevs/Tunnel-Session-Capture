@@ -45,7 +45,7 @@ class Session(SystemInfo):
 
     def save_session(self, session):
         self.session_dir.mkdir(parents=True, exist_ok=True)
-        safe_ip = session["ip"].replace(":", "_").replace("/", "_") or "unknown"
+        safe_ip = session["client_ip"].replace(":", "_").replace("/", "_") or "unknown"
         output_file = self.session_dir / f"{safe_ip}.json"
 
         sessions: list[dict] = []
